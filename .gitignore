@@ -46,3 +46,4 @@ derby.log
 Thumbs.db
 *.tmp
 *.swp
+.env*

@@ -1,15 +1,17 @@
 <%@ page import="java.util.*" %>
 <%@ page import="java.math.BigDecimal" %>
-<%@ page import="java.text.SimpleDateFormat" %>
 <%@ page import="org.joda.time.LocalDate" %>
 <%@ page import="com.sourcegraph.demo.bigbadmonolith.dao.*" %>
 <%@ page import="com.sourcegraph.demo.bigbadmonolith.entity.*" %>
+<%@ page import="com.sourcegraph.demo.bigbadmonolith.service.TimeEntryRequest" %>
+<%@ page import="com.sourcegraph.demo.bigbadmonolith.service.TimeEntryService" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%
     BillableHourDAO billableHourDAO = new BillableHourDAO();
     CustomerDAO customerDAO = new CustomerDAO();
     UserDAO userDAO = new UserDAO();
     BillingCategoryDAO categoryDAO = new BillingCategoryDAO();
+    TimeEntryService timeEntryService = new TimeEntryService();
     
     String action = request.getParameter("action");
     String message = "";
@@ -21,50 +23,15 @@
         String hoursStr = request.getParameter("hours");
         String note = request.getParameter("note");
         String dateStr = request.getParameter("date");
-        
-        boolean isValid = true;
-        StringBuilder errors = new StringBuilder();
-        
-        if (customerIdStr == null || customerIdStr.trim().isEmpty()) {
-            errors.append("Customer is required. ");
-            isValid = false;
-        }
-        if (userIdStr == null || userIdStr.trim().isEmpty()) {
-            errors.append("User is required. ");
-            isValid = false;
-        }
-        if (categoryIdStr == null || categoryIdStr.trim().isEmpty()) {
-            errors.append("Category is required. ");
-            isValid = false;
-        }
-        if (hoursStr == null || hoursStr.trim().isEmpty()) {
-            errors.append("Hours is required. ");
-            isValid = false;
-        }
-        
-        if (isValid) {
-            try {
-                LocalDate logDate;
-                if (dateStr != null && !dateStr.trim().isEmpty()) {
-                    logDate = LocalDate.parse(dateStr);
-                } else {
-                    logDate = LocalDate.now();
-                }
-                
-                Long customerId = Long.parseLong(customerIdStr);
-                Long userId = Long.parseLong(userIdStr);
-                Long categoryId = Long.parseLong(categoryIdStr);
-                BigDecimal hours = new BigDecimal(hoursStr);
-                
-                BillableHour billableHour = new BillableHour(customerId, userId, categoryId, hours, note, logDate);
-                billableHourDAO.save(billableHour);
-                message = "Hours logged successfully!";
-            } catch (Exception e) {
-                message = "Error logging hours: " + e.getMessage();
-            }
-        } else {
-            message = "Validation errors: " + errors.toString();
-        }
+        TimeEntryRequest timeEntryRequest = new TimeEntryRequest(
+            customerIdStr,
+            userIdStr,
+            categoryIdStr,
+            hoursStr,
+            note,
+            dateStr
+        );
+        message = timeEntryService.log(timeEntryRequest);
     }
 %>
 <html>
