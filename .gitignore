@@ -41,3 +41,8 @@ bin/
 ### Derby Database ###
 data/
 derby.log
+
+### Universal ###
+Thumbs.db
+*.tmp
+*.swp
